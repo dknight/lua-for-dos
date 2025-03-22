@@ -1,5 +1,3 @@
-REM PATH=C:\LUADOS\TC
-REM CD C:\LUADOS\LUA\SRC
 PATH=C:\TC
 CD C:\LUA\SRC
 TCC -w- -ms- -mh -I. -c *.c
@@ -15,5 +13,4 @@ COPY SRC\LUA.EXE BIN
 COPY SRC\LUAC.EXE BIN
 CD BIN
 LUA
-for i = 1, i = 10 do print(i) end
-# CTRL+C exit
+for i = 1, i = 5 do print(i) end; print("Ctrl+C to exit")
