@@ -19,4 +19,4 @@ cd lua/
 unix2dos src/*
 # force using binary to avoid incositency with line-endinds, by some reason
 # unix2dos does not always helps
-patch -p1 -i "../lua-5-4-7-for-dos-with-borland-turbo-c-2.01.patch" --binary
+patch -p1 -i "../lua-5.4.7-for-dos-with-borland-turbo-c-2.01.patch" --binary
