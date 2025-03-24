@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Cleanup downloaded and compiled files if you messes up
+
 rm -rf BorlandTurboC201-megapack.zip \
 	RUNHACK.BAT \
 	RUNHACK.EXE \

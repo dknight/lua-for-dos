@@ -1,0 +1,165 @@
+diff -ruw old/src/lfunc.h src/lfunc.h
+--- old/src/lfunc.h	2024-06-14 01:15:09.000000000 +0300
++++ src/lfunc.h	2025-03-22 13:30:11.870456912 +0200
+@@ -11,10 +11,10 @@
+ #include "lobject.h"
+ 
+ 
+-#define sizeCclosure(n)	(cast_int(offsetof(CClosure, upvalue)) + \
++#define sizeCclosure(n)	(cast_int(OFFSETOF(CClosure, upvalue)) + \
+                          cast_int(sizeof(TValue)) * (n))
+ 
+-#define sizeLclosure(n)	(cast_int(offsetof(LClosure, upvals)) + \
++#define sizeLclosure(n)	(cast_int(OFFSETOF(LClosure, upvals)) + \
+                          cast_int(sizeof(TValue *)) * (n))
+ 
+ 
+diff -ruw old/src/lobject.h src/lobject.h
+--- old/src/lobject.h	2024-06-14 01:15:09.000000000 +0300
++++ src/lobject.h	2025-03-22 13:30:11.872456926 +0200
+@@ -486,8 +486,8 @@
+ 
+ /* compute the offset of the memory area of a userdata */
+ #define udatamemoffset(nuv) \
+-	((nuv) == 0 ? offsetof(Udata0, bindata)  \
+-                    : offsetof(Udata, uv) + (sizeof(UValue) * (nuv)))
++	((nuv) == 0 ? OFFSETOF(Udata0, bindata)  \
++                    : OFFSETOF(Udata, uv) + (sizeof(UValue) * (nuv)))
+ 
+ /* get the address of the memory block inside 'Udata' */
+ #define getudatamem(u)	(cast_charp(u) + udatamemoffset((u)->nuvalue))
+diff -ruw old/src/lstate.c src/lstate.c
+--- old/src/lstate.c	2024-06-14 01:15:09.000000000 +0300
++++ src/lstate.c	2025-03-22 13:30:38.367635350 +0200
+@@ -48,7 +48,7 @@
+ 
+ 
+ 
+-#define fromstate(L)	(cast(LX *, cast(lu_byte *, (L)) - offsetof(LX, l)))
++#define fromstate(L)	(cast(LX *, cast(lu_byte *, (L)) - OFFSETOF(LX, l)))
+ 
+ 
+ /*
+@@ -290,7 +290,7 @@
+   lua_lock(L);
+   luaC_checkGC(L);
+   /* create new thread */
+-  o = luaC_newobjdt(L, LUA_TTHREAD, sizeof(LX), offsetof(LX, l));
++  o = luaC_newobjdt(L, LUA_TTHREAD, sizeof(LX), OFFSETOF(LX, l));
+   L1 = gco2th(o);
+   /* anchor it on L stack */
+   setthvalue2s(L, L->top.p, L1);
+diff -ruw old/src/lstring.h src/lstring.h
+--- old/src/lstring.h	2024-06-14 01:15:09.000000000 +0300
++++ src/lstring.h	2025-03-22 13:30:11.877456959 +0200
+@@ -23,7 +23,7 @@
+ ** Size of a TString: Size of the header plus space for the string
+ ** itself (including final '\0').
+ */
+-#define sizelstring(l)  (offsetof(TString, contents) + ((l) + 1) * sizeof(char))
++#define sizelstring(l)  (OFFSETOF(TString, contents) + ((l) + 1) * sizeof(char))
+ 
+ #define luaS_newliteral(L, s)	(luaS_newlstr(L, "" s, \
+                                  (sizeof(s)/sizeof(char))-1))
+diff -ruw old/src/lstrlib.c src/lstrlib.c
+--- old/src/lstrlib.c	2024-06-14 01:15:09.000000000 +0300
++++ src/lstrlib.c	2025-03-22 13:30:11.880456979 +0200
+@@ -1519,7 +1519,7 @@
+     case '>': h->islittle = 0; break;
+     case '=': h->islittle = nativeendian.little; break;
+     case '!': {
+-      const int maxalign = offsetof(struct cD, u);
++      const int maxalign = OFFSETOF(struct cD, u);
+       h->maxalign = getnumlimit(h, fmt, maxalign);
+       break;
+     }
+diff -ruw old/src/luaconf.h src/luaconf.h
+--- old/src/luaconf.h	2024-06-14 01:15:10.000000000 +0300
++++ src/luaconf.h	2025-03-22 13:30:11.882456993 +0200
+@@ -41,7 +41,7 @@
+ ** Define it if you want Lua to avoid the use of a few C99 features
+ ** or Windows-specific features on Windows.
+ */
+-/* #define LUA_USE_C89 */
++#define LUA_USE_C89
+ 
+ 
+ /*
+@@ -122,7 +122,7 @@
+ /*
+ @@ LUA_32BITS enables Lua with 32-bit integers and 32-bit floats.
+ */
+-#define LUA_32BITS	0
++#define LUA_32BITS	1
+ 
+ 
+ /*
+@@ -196,7 +196,7 @@
+ ** non-conventional directories.
+ */
+ 
+-#define LUA_VDIR	LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
++#define LUA_VDIR "547"
+ #if defined(_WIN32)	/* { */
+ /*
+ ** In Windows, any exclamation mark ('!') in the path is replaced by the
+@@ -223,9 +223,9 @@
+ 
+ #else			/* }{ */
+ 
+-#define LUA_ROOT	"/usr/local/"
+-#define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
+-#define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
++#define LUA_ROOT	"c:\\lua\\"
++#define LUA_LDIR	LUA_ROOT "share\\"
++#define LUA_CDIR	LUA_ROOT "lib\\"
+ 
+ #if !defined(LUA_PATH_DEFAULT)
+ #define LUA_PATH_DEFAULT  \
+@@ -247,6 +247,7 @@
+ ** CHANGE it if your machine does not use "/" as the directory separator
+ ** and is not Windows. (On Windows Lua automatically uses "\".)
+ */
++#define LUA_DIRSEP "\\"
+ #if !defined(LUA_DIRSEP)
+ 
+ #if defined(_WIN32)
+@@ -344,6 +345,7 @@
+ ** You can define it to get all options, or change specific options
+ ** to fit your specific needs.
+ */
++#define LUA_COMPAT_5_3
+ #if defined(LUA_COMPAT_5_3)	/* { */
+ 
+ /*
+@@ -667,6 +669,7 @@
+ ** Change that if you do not want to use C locales. (Code using this
+ ** macro must include the header 'locale.h'.)
+ */
++#define lua_getlocaledecpoint() '.'
+ #if !defined(lua_getlocaledecpoint)
+ #define lua_getlocaledecpoint()		(localeconv()->decimal_point[0])
+ #endif
+@@ -794,9 +797,21 @@
+ ** without modifying the main part of the file.
+ */
+ 
++#define OFFSETOF(T,f) ((size_t)(char *)&(((T*)(void*)0)->f))
+ 
++#define CLOCKS_PER_SEC CLK_TCK
+ 
+-
++/* locale */
++#define LC_ALL 0
++#define LC_COLLATE 1
++#define LC_CTYPE 2
++#define LC_MONETARY 3
++#define LC_NUMERIC 4
++#define LC_TIME 5
++#define strcoll strcmp
++#define setlocale(x,y) ("C")
++#define mktime(x) (-1)
++#define strftime(x,y,z,w) (0)
+ 
+ #endif
+ 
